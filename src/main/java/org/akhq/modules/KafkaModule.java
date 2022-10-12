@@ -19,6 +19,7 @@ import jakarta.inject.Singleton;
 import org.akhq.configs.AbstractProperties;
 import org.akhq.configs.Connection;
 import org.akhq.configs.Default;
+import org.akhq.utils.Credentials;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -48,7 +49,7 @@ public class KafkaModule {
             .collect(Collectors.toList());
     }
 
-    public boolean clusterExists(String cluster){
+    public boolean clusterExists(String cluster) {
         return this.getClustersList().contains(cluster);
     }
 
@@ -71,6 +72,16 @@ public class KafkaModule {
             .stream()
             .filter(r -> r.getName().equals(type))
             .forEach(r -> properties.putAll(r.getProperties()));
+
+        Optional.ofNullable(properties.getProperty("sasl.jaas.config"))
+            .ifPresent(value -> {
+                properties.put(
+                    "sasl.jaas.config",
+                    NamedFormatter.format(value, Map.of(
+                        "username", Credentials.getUserName(),
+                        "password", Credentials.getPassword()
+                    )));
+            });
 
         return properties;
     }

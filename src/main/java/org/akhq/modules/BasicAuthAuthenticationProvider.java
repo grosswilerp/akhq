@@ -12,6 +12,7 @@ import org.akhq.utils.ClaimRequest;
 import org.akhq.utils.ClaimResponse;
 import org.akhq.utils.ClaimProvider;
 import org.akhq.utils.ClaimProviderType;
+import org.akhq.utils.Credentials;
 import org.reactivestreams.Publisher;
 
 import java.util.Optional;
@@ -26,6 +27,11 @@ public class BasicAuthAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Publisher<AuthenticationResponse> authenticate(@Nullable HttpRequest<?> httpRequest, AuthenticationRequest<?, ?> authenticationRequest) {
         String username = String.valueOf(authenticationRequest.getIdentity());
+        String password = String.valueOf(authenticationRequest.getSecret());
+
+        Credentials.setUserName(username);
+        Credentials.setPassword(password);
+
         Optional<BasicAuth> optionalBasicAuth = securityProperties.getBasicAuth()
                 .stream()
                 .filter(basicAuth -> basicAuth.getUsername().equals(username))
