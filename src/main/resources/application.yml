@@ -25,7 +25,30 @@ micronaut:
         paths: classpath:META-INF/swagger
         mapping: "/swagger/**"
   security:
-    enabled: false
+    enabled: true
+    ldap:
+      default:
+        enabled: true
+        context:
+          #server: "ldaps://ldaps1pnet.pnet.ch:636"
+          server: "ldap://localhost:10389"
+          attributes:
+            - "uid"
+          managerDn: "uid=admin,ou=system"
+          managerPassword: "secret"
+        search:
+          base: "ou=users,dc=security,dc=example,dc=com"
+          attributes:
+            - "uid"
+          #subtree: true
+          #filter: "(sAMAccountName={0})"
+        groups:
+          enabled: true
+          base: "ou=groups,dc=security,dc=example,dc=com"
+          attributes:
+            - "cn"
+          subtree: true
+          filter: "member={0}"
     authentication: cookie
     endpoints:
       login:
@@ -90,6 +113,15 @@ akhq:
       filters:
         - "((?!/health).)*"
 
+  connections:
+    local:
+      properties:
+        bootstrap.servers: "localhost:9092"
+        security.protocol: SASL_PLAINTEXT
+        sasl.mechanism: PLAIN
+        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="%(username)" password="%(password)";
+        #sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="srvkafkabroker" password="broker";
+
   clients-defaults:
     consumer:
       properties:
@@ -128,8 +160,17 @@ akhq:
     kafka-max-message-length: 1000000
 
   security:
-    default-group: admin
+    default-group: no-roles
     groups:
+      strm-reader:
+        name: strm-reader
+        roles:
+          - topic/read
+          - node/read
+          - topic/data/read
+          - group/read
+          - acls/read
+          - connect/read
       admin:
         name: admin
         roles:
@@ -170,3 +211,19 @@ akhq:
       no-roles:
         name: no-roles
         roles: []
+
+    ldap:
+      default-group: strm-reader
+      groups:
+        - name: "Z-AKHQ-USER"
+          groups:
+            - strm-reader
+        - name: "Z-AKHQ-ADMIN"
+          groups:
+            - admin
+        - name: "ktconsTest"
+          groups:
+            - strm-reader
+        - name: "ktprodTest"
+          groups:
+            - strm-reader

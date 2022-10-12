@@ -1,0 +1,80 @@
+micronaut:
+  session:
+    http:
+      cookie-max-age: 2h
+    max-inactive-interval: 2h
+  security:
+    enabled: true
+    ldap:
+      default:
+        enabled: true
+        context:
+          #server: "ldaps://ldaps1pnet.pnet.ch:636"
+          server: "ldap://localhost:10389"
+          attributes:
+            - "uid"
+          managerDn: "uid=admin,ou=system"
+          managerPassword: "secret"
+        search:
+          base: "ou=users,dc=security,dc=example,dc=com"
+          attributes:
+            - "uid"
+          #subtree: true
+          #filter: "(sAMAccountName={0})"
+        groups:
+          enabled: true
+          base: "ou=groups,dc=security,dc=example,dc=com"
+          attributes:
+            - "cn"
+          subtree: true
+          filter: "member={0}"
+
+akhq:
+  server:
+    access-log: # Access log configuration (optional)
+      enabled: true # true by default
+      name: org.akhq.log.access # Logger name
+      format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [User: {}]" # Logger format
+
+  connections:
+    local:
+      properties:
+        bootstrap.servers: "localhost:9092"
+        security.protocol: SASL_PLAINTEXT
+        sasl.mechanism: PLAIN
+        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="%(username)" password="%(password)";
+
+  pagination:
+    page-size: 25 # number of elements per page
+    threads: 16 # Number of parallel threads to resolve page
+
+  # Auth & Roles
+  security:
+    default-group: no-roles # Default groups for all the user even unlogged user
+    groups:
+      strm-reader:
+        name: strm-reader
+        roles:
+          - topic/read
+          - node/read
+          - topic/data/read
+          - group/read
+          - acls/read
+          - connect/read
+
+    # Ldap Groups configuration (when using ldap)
+    ldap:
+      default-group: strm-reader
+      groups:
+        - name: "Z-AKHQ-USER"
+          groups:
+            - strm-reader
+        - name: "Z-AKHQ-ADMIN"
+          groups:
+            - admin
+        - name: "ktconsTest"
+          groups:
+            - strm-reader
+        - name: "ktprodTest"
+          groups:
+            - strm-reader

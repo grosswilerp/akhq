@@ -3,8 +3,11 @@ plugins {
 }
 
 repositories {
-    mavenLocal()
-    mavenCentral()
+    //mavenLocal()
+    //mavenCentral()
+    maven { url 'https://artifactory.tools.post.ch/artifactory/swisspost-maven-artifactory'}
+    maven { url 'https://artifactory.tools.post.ch/artifactory/swisspost'}
+    maven { url 'https://artifactory.tools.post.ch/artifactory/swisspost-gradle'}
 }
 
 frontend {
